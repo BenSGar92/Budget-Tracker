@@ -1,20 +1,16 @@
-
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1";
-
-const iconSizes = ["72", "96", "128", "144", "152", "192", "384", "512"];
+const iconSizes = [ "192", "512"];
 const iconFiles = iconSizes.map(
-  (size) => `/assets/images/icons/icon-${size}x${size}.png`
+  (size) => `/icons/icon-${size}x${size}.png`
 );
-
 const staticFilesToPreCache = [
   "/",
-  "/app.js",
-  "/favicon.ico",
+  "/styles.css",
+  "/index.js",
+  "/db.js",
   "/manifest.webmanifest",
 ].concat(iconFiles);
-
-
 // install
 self.addEventListener("install", function(evt) {
   evt.waitUntil(
@@ -23,10 +19,8 @@ self.addEventListener("install", function(evt) {
       return cache.addAll(staticFilesToPreCache);
     })
   );
-
   self.skipWaiting();
 });
-
 // activate
 self.addEventListener("activate", function(evt) {
   evt.waitUntil(
@@ -41,14 +35,12 @@ self.addEventListener("activate", function(evt) {
       );
     })
   );
-
   self.clients.claim();
 });
-
 // fetch
 self.addEventListener("fetch", function(evt) {
   const {url} = evt.request;
-  if (url.includes("/all") || url.includes("/find")) {
+  if (url.includes("/api/transaction") || url.includes("/")) {
     evt.respondWith(
       caches.open(DATA_CACHE_NAME).then(cache => {
         return fetch(evt.request)
@@ -57,7 +49,6 @@ self.addEventListener("fetch", function(evt) {
             if (response.status === 200) {
               cache.put(evt.request, response.clone());
             }
-
             return response;
           })
           .catch(err => {
